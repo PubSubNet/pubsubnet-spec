@@ -117,7 +117,7 @@ currently this document has ideas and non-normative descriptions, taken from my 
   - does all of the heavy lifting, encoding, signing/encrypting, presentation, validation / verification
   - multi-user
 
-## board: 
+## board
   - named, tagged?, encrypted?, ordered? collection of items
   - represented as a feed within WebSub
   - indexable to the extent that its items are
