@@ -1,8 +1,10 @@
 # PubSubNet spec
 
-architecture description and specification of the PubSubNet protocol
+architecture description and specification of the PubSubNet content networking protocol, extending WebSub's Publish/Subscribe model
 
 currently this document has ideas and non-normative descriptions, taken from my notes, of the very first revision of the specification and / or protocol. 
+
+**briefly**: PubSubNet aims to replace Twitter, Facebook, and similar centralised for-profit social media, by putting users in control of their social network. Personal data is stored on your device locally, and only content you choose is uploaded to the Hubs for others to see.
 
 ---
 
