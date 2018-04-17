@@ -2,7 +2,7 @@
 
 A decentralised message board protocol for the modern era.
 
-What does "decentral" mean? Every modern social media platform stores your password and preferences, the content you create and consume, and everything else you do on their servers. They only let you interact with your data through their applications, and the source code of their applications is not available to the users.
+What does "decentral" mean? Every modern social media platform stores your password hash and preferences, the content you create and consume, and everything else you do on their servers. They only let you interact with your data through their applications, and the source code and raw data of their applications is not available to the users.
 
 This asymmetry allows for the profitable collection of personal data about you, so that you may use their service.
 
@@ -12,7 +12,7 @@ There are undeniable conveniences to this centralisation, but obvious downsides 
 
 Through the progressive publish/subscribe model specified by WebSub, a different kind of social network is possible. One in which your data is encrypted and stored offline, and you choose exactly what content to publish and subscribe to.
 
-PubSubNet requires the use of intermediate data servers (called Hubs) to share the content you publish, but these servers are only public feeds for content -- they do not know you, and they only do what you tell them. Moreover, you can choose which Hubs you use.
+PubSubNet requires the use of intermediate data servers (called Hubs) to share the content you publish, but these servers are only public feeds for content -- they do not know you, and they only do what you tell them. Moreover, you can choose which Hubs you use, or even run your own.
 
 ## What are the goals of PubSubNet?
 
@@ -22,6 +22,7 @@ Informally, the goals of this project are those:
 - **Privacy**: automatic anonymity, digital signing, and no centralised store of personally identifying data
 - **Decentralisation**: offline caching by design means offline browsing, and anyone can start a Hub for any purpose
 - **Usability**: advanced features and available source code shouldn't prevent the average user from getting the most out of PubSubNet
+- **Personalisation**: no more branded colour schemes, or other users' annoying colour schemes -- it's all put in the control of the observing user
 - ...?
 
 ## Design overview
@@ -32,13 +33,16 @@ In **WebSub**, **Publishers** are usually organisations or aggregators, who crea
 
 **WebSub is designed to be a server-server protocol**, where Publishers, Subscribers and Hubs are all accessible by definite HTTP URLs. **PubSubNet** will use HTTP/2 Server Push over client GET / POST requests to mimic a server-server architecture, rather than acting as a client tracker.
 
-PubSubNet extends and generalises this model, so that Publishers and Subscribers may be non-server HTTP/2 clients:
+PubSubNet extends and generalises this model, so that Publishers and Subscribers may be non-server (HTTP/2) clients:
 
 - **Publisher** is a role taken on by a client who *publishes* or uploads anything to a Hub. Anyone can be a **Publisher**; there are no qualifications to publish content.
 
 - **Subscriber** is a role taken on by a client who *subscribes* or listens to any feed on a Hub.
 
 - **Hub** is a very simple server, which is told feed data by **Publishers**, and which makes feeds publicly available to **Subscribers**.
+
+
+*PubSubNet can probably be implemented with RSS/Atom and HTTP/1.1, but there's (almost) no reason to do this.*
 
 ### PubSubNet terminology:
 
@@ -64,6 +68,7 @@ PubSubNet extends and generalises this model, so that Publishers and Subscribers
 - boards may have a theme, and clients can also override all themes (replacing images, dark mode, no custom user themes etc)
 
 - decryption private key distribution will be recommended to be done over Tox, Messenger Secret Conversations or some other secure channel
+  - incidentally Tox uses(?) deniable authentication (repudiation) which is unsuitable for any long-lived scheme
 
 - Tox-based personal messaging system with Tox features (?)
   - no, just recommend use tox for privatemessaging
@@ -82,6 +87,10 @@ PubSubNet extends and generalises this model, so that Publishers and Subscribers
   - all participants in a network need to declare:
     - spec / protocol revision they implement
     - hub/client semantic version (version+patchlevel)
+    - maximum preferred HTTP protocol version
+      - HTTP/2 + HTTP/1.1 = HTTP/1.1
+      - HTTP/2 + HTTP/1.0 = no connection
+      - HTTP/1.1 + HTTP/1.0 = no connection
 
   - cache is:
     - of two kinds, volatile and permanent
@@ -141,6 +150,8 @@ PubSubNet extends and generalises this model, so that Publishers and Subscribers
   - responds to different kinds of publish requests
   - supports HTTP/2
   - trashes content after some (variable) timeout (max 30 days?)
+  - can be protected by authentication (how?)
+  - can be configured to collect anonymous usage statistics
 
 ## client
   - is simultaneously a publisher and subscriber
@@ -232,6 +243,7 @@ PubSubNet extends and generalises this model, so that Publishers and Subscribers
     - usernames / dispnames are not required to be unique, but u3ids and public keys are
     - user/dispnames can be changed at will, keys can be changed sometimes, but u3ids cannot be changed
     - users are cheap and can be readily discarded because they are only a "tag" on objects, like boards and items
+      - compare to centralised models, where a user is a real row in a real table
 
 # questions / challenges
   - base64 tends to grow quite large 137%, but python pickle is not universal
@@ -241,7 +253,7 @@ PubSubNet extends and generalises this model, so that Publishers and Subscribers
   - metadata duplication / location
   - message header / format?
   - encryption of large things
-  - minor signing + hashing challenges
+  - minor signing + hashing challenges (HMAC, but handshake makes no sense)
   - multi-device access is an impossibility without central server
     - suggest use syncthing or other syncing / cloud service (local data is encrypted anyway)
   - things encrypted / signed with old public keys cannot be updated to use the new public key
@@ -252,3 +264,12 @@ PubSubNet extends and generalises this model, so that Publishers and Subscribers
   - subscribing to a board should give you its old posts (without downloading the entire board history)
   - real concrete date indexing, like Facebook, Twitter and Instagram don't
   - does / can a hub "know" who is subscribed to it?
+  - how to see another user's profile information?
+    - banner, picture, username, etc is pinned to their board's feed and maybe encrypted
+    - different to centralisation because you choose what and how to share, which hubs, etc
+  - one-to-many encryption is unsafe
+    - "transparent" per-U3ID secret keys? how to trade them? socialist millionaires-like
+  - U3IDs are large, unique, random numbers but with a custom client it is easy to pretend to have someone else's U3ID
+    - there is no way to ensure identity or prevent "overwriting" malice without digital signing
+    - first-come first-have?
+    - some kind of setup-required "transparent" auth should be possible 
